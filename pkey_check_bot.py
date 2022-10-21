@@ -4,7 +4,7 @@ import base64
 from datetime import datetime
 
 base_url = "https://api.telegram.org/bot"
-api_key="5623719005:AAESRiSLODCok6uPgxqTRCPETTChRsxNh8c"
+api_key="" #YOur bot api key here
 
 # Static variables
 base_url_api_key = base_url+api_key
