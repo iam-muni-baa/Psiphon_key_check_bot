@@ -16,6 +16,7 @@ import base64
 from datetime import datetime
 from pytz import timezone
 from getpass import getpass
+import re
 
 """# Variables
 
@@ -37,6 +38,12 @@ owner_credits="Credits @iam_muni_baa"
 
 match_var = "check"
 
+"""# Matching pattern"""
+
+def match(text):
+  pattern = '\["([^\n]+)"\]'
+  return re.findall(pattern,text)[-1]
+
 """#Reciving messages or Reading data"""
 
 #Reciving messages or reading data
@@ -47,25 +54,25 @@ def read_message(offset):
         "offset":offset,
     }
     res = requests.get(base_url,data = parameters)
-
+    # print(res.text)
     data = res.json() # REsponse data converted into json data
     if data["result"]:
       chat_id = data["result"][-1]["message"]["chat"]["id"] # Getting the chat_id from the read dat or recived message
-      if "reply_to_message" in res.text :
-        key_in_chat=data["result"][-1]["message"]["reply_to_message"]["text"]
-        replay_message_id = data["result"][-1]["message"]["reply_to_message"]["message_id"] # Getting replay data
-        replaying_text = key_check(key_in_chat[2:-2])
-        for result in data["result"]:
-          if match_var in (result["message"]["text"]): # Checking the recived messages matches with ours or not
-            send_message(chat_id,replay_message_id,replaying_text) # Calling Send Function
+      key_in_chat=data["result"][-1]["message"]["text"]
+      replay_message_id = data["result"][-1]["message"]["message_id"] # Getting replay data
+      replaying_text = key_check(match(text=key_in_chat)) # Calling match function
+      # print(replaying_text)
 
+      for result in data["result"]:
+        send_message(chat_id,replay_message_id,replaying_text) # Calling Send Function
+      
       # # Debugging prints
-      # print(chat_id,  replay_message_id  )
+      # print(chat_id, replay_message_id ,res.text)
   except:
     pass
   if data["result"]:
 
-    return data["result"][-1]["update_id"] + 1 # Return the updated offset
+      return data["result"][-1]["update_id"] + 1 # Return the updated offset
 
 """# Sending Message code"""
 
@@ -95,7 +102,7 @@ def key_check(pkey):
     if ExpirationDate <= now:
       return (f"Expired {owner_credits}")
     elif ExpirationDate > now:
-      return (f"{ExpirationDate - now} Reaming {owner_credits}")
+      return (f"\n{ExpirationDate - now} {owner_credits}")
 
   except :
      return "Not a valid data"
